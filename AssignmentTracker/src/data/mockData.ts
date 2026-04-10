@@ -9,7 +9,7 @@ const nextWeek = new Date(today);
 nextWeek.setDate(nextWeek.getDate() + 5);
 
 export const mockUser: User = {
-  name: 'Alex',
+  name: 'user',
   coinBalance: 45,
   unlockedItems: ['default_theme'],
 };

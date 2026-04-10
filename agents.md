@@ -2,7 +2,8 @@
 
 ## Overview
 Build a mobile app for college students that helps them track assignments with light gamification.
-
+ 
+ 
 Users can:
 - add assignments with a title, type, estimated duration, and deadline
 - view upcoming assignments

@@ -1,59 +1,36 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text, StyleSheet } from 'react-native';
-import { HomeScreen, CalendarScreen, RewardsScreen } from '../screens';
+import { HomeScreen, CalendarScreen, RewardsScreen, AddAssignmentScreen } from '../screens';
 import { colors } from '../utils/colors';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
-const TabIcon: React.FC<{ label: string; focused: boolean; icon: string }> = ({
-  label,
-  focused,
-  icon,
-}) => (
+const TabIcon: React.FC<{ label: string; focused: boolean; icon: string }> = ({ label, focused, icon }) => (
   <View style={styles.tabIconContainer}>
     <Text style={[styles.tabIcon, focused && styles.tabIconFocused]}>{icon}</Text>
     <Text style={[styles.tabLabel, focused && styles.tabLabelFocused]}>{label}</Text>
   </View>
 );
 
+const Tabs: React.FC = () => (
+  <Tab.Navigator
+    screenOptions={{ headerShown: false, tabBarStyle: styles.tabBar, tabBarShowLabel: false }}
+  >
+    <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: ({ focused }) => <TabIcon label="Home" focused={focused} icon="🏠" /> }} />
+    <Tab.Screen name="Calendar" component={CalendarScreen} options={{ tabBarIcon: ({ focused }) => <TabIcon label="Calendar" focused={focused} icon="📅" /> }} />
+    <Tab.Screen name="Rewards" component={RewardsScreen} options={{ tabBarIcon: ({ focused }) => <TabIcon label="Rewards" focused={focused} icon="🎁" /> }} />
+  </Tab.Navigator>
+);
+
 export const AppNavigator: React.FC = () => {
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: styles.tabBar,
-        tabBarShowLabel: false,
-      }}
-    >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon label="Home" focused={focused} icon="🏠" />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Calendar"
-        component={CalendarScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon label="Calendar" focused={focused} icon="📅" />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Rewards"
-        component={RewardsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon label="Rewards" focused={focused} icon="🎁" />
-          ),
-        }}
-      />
-    </Tab.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Tabs" component={Tabs} />
+      <Stack.Screen name="AddAssignment" component={AddAssignmentScreen} />
+    </Stack.Navigator>
   );
 };
 

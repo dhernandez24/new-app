@@ -23,9 +23,7 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [assignments] = useState<Assignment[]>(mockAssignments);
   const [user] = useState(mockUser);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-
+  // Removed modal -> navigation-based Add screen
   const groupedAssignments = assignments.reduce((groups, assignment) => {
     const dateKey = assignment.deadline.toDateString();
     if (!groups[dateKey]) {
@@ -40,13 +38,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   );
 
   const handleAddAssignment = () => {
-    setModalVisible(true);
-  };
-
-  const handleSubmitAssignment = () => {
-    if (newTitle.trim()) {
-      setModalVisible(false);
-      setNewTitle('');
+    // Try navigating to root navigator to access AddAssignment screen
+    const navAny: any = navigation;
+    const root = navAny.getParent?.();
+    if (root && typeof root.navigate === 'function') {
+      root.navigate('AddAssignment');
+    } else {
+      navigation.navigate('AddAssignment' as any);
     }
   };
 
@@ -99,69 +97,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
       <FloatingButton onPress={handleAddAssignment} />
 
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>New Assignment</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={styles.closeButton}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.form}>
-              <Text style={styles.label}>Title</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter assignment title"
-                value={newTitle}
-                onChangeText={setNewTitle}
-                placeholderTextColor={colors.textLight}
-              />
-
-              <Text style={styles.label}>Type</Text>
-              <View style={styles.typeButtons}>
-                {(['homework', 'test', 'task', 'other'] as AssignmentType[]).map((type) => (
-                  <TouchableOpacity key={type} style={styles.typeButton}>
-                    <Text style={styles.typeButtonText}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <Text style={styles.label}>Duration (minutes)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g. 60"
-                keyboardType="numeric"
-                placeholderTextColor={colors.textLight}
-              />
-
-              <Text style={styles.label}>Deadline</Text>
-              <TouchableOpacity style={styles.datePicker}>
-                <Text style={styles.datePickerText}>Select date and time</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  !newTitle.trim() && styles.submitButtonDisabled,
-                ]}
-                onPress={handleSubmitAssignment}
-                disabled={!newTitle.trim()}
-              >
-                <Text style={styles.submitButtonText}>Add Assignment</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {/* Add Assignment screen is a separate route; the FAB navigates there */}
     </SafeAreaView>
   );
 };
