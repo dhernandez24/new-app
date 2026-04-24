@@ -5,7 +5,8 @@ import { Assignment, AssignmentType } from '../types';
 interface AssignmentsState {
   assignments: Assignment[];
   loadAssignments: () => Promise<void>;
-  addAssignment: (assignment: { title: string; type: AssignmentType; duration: number; deadline: Date; description?: string }) => Promise<void>;
+  addAssignment: (assignment: Omit<Assignment, 'id' | 'status' | 'coinReward' | 'createdAt' | 'completedAt'>) => Promise<void>;
+  updateAssignment: (assignment: Assignment) => Promise<void>;
   completeAssignment: (id: string) => Promise<void>;
   deleteAssignment: (id: string) => Promise<void>;
 }
@@ -67,6 +68,22 @@ export const useAssignmentsStore = create<AssignmentsStore>((set, get) => ({
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     } catch (error) {
       console.error('Failed to save assignment:', error);
+    }
+  },
+
+  updateAssignment: async (assignment) => {
+    // Recalculate coinReward based on type and duration
+    const updatedWithReward: Assignment = {
+      ...assignment,
+      coinReward: calculateCoinReward(assignment.type, assignment.duration),
+    };
+    const updated = get().assignments.map((a) => (a.id === assignment.id ? updatedWithReward : a));
+    set({ assignments: updated });
+
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.error('Failed to update assignment:', error);
     }
   },
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,46 +11,120 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../utils/colors';
 import { useAssignmentsStore } from '../store/AssignmentsStore';
-import { AssignmentType } from '../types';
+import { AssignmentType, Assignment } from '../types';
+import { useRoute, useNavigation } from '@react-navigation/native';
 
 const TYPE_OPTIONS: AssignmentType[] = ['homework', 'test', 'task', 'other'];
 
-export const AddAssignmentScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+interface AssignmentScreenParams {
+  assignmentId?: string;
+}
+
+export const AddAssignmentScreen: React.FC = () => {
+  const navigation = useNavigation();
+  // Fix typing: specify the param list for the root navigator
+  const route = useRoute<{ assignmentId?: string }>();
+  const { assignmentId } = route.params;
+
   const [title, setTitle] = useState('');
   const [selectedType, setSelectedType] = useState<AssignmentType>('homework');
   const [duration, setDuration] = useState<string>('60');
   const [deadlineDate, setDeadlineDate] = useState<string>('');
   const [deadlineTime, setDeadlineTime] = useState<string>('3:00 PM');
   const [description, setDescription] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const addAssignmentStore = useAssignmentsStore((state) => state.addAssignment);
+  const assignmentsStore = useAssignmentsStore();
+  const addAssignmentStore = assignmentsStore.addAssignment;
+  const updateAssignmentStore = assignmentsStore.updateAssignment;
+  const loadAssignments = assignmentsStore.loadAssignments;
 
-  const addAssignment = async () => {
+  // Load assignment if editing
+  useEffect(() => {
+    if (assignmentId) {
+      setIsLoading(true);
+      // Reload assignments to ensure we have latest data
+      loadAssignments().then(() => {
+        const assignment = assignmentsStore.assignments.find((a) => a.id === assignmentId);
+        if (assignment) {
+          setTitle(assignment.title);
+          setSelectedType(assignment.type);
+          setDuration(assignment.duration.toString());
+          // Format deadline date and time
+          const deadline = assignment.deadline;
+          setDeadlineDate(deadline.toLocaleDateString('en-CA')); // YYYY-MM-DD
+          setDeadlineTime(deadline.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }));
+          setDescription(assignment.description ?? '');
+        }
+        setIsLoading(false);
+      });
+    }
+  }, [assignmentId, loadAssignments, assignmentsStore]);
+
+  const saveAssignment = async () => {
     if (!title.trim()) {
       Alert.alert('Missing Title', 'Please enter a title for your assignment.');
       return;
     }
 
-    const deadline = deadlineDate
-      ? new Date(`${deadlineDate} ${deadlineTime}`)
-      : new Date(Date.now() + 24 * 60 * 60 * 1000);
+    setIsLoading(true);
+    try {
+      const deadline = deadlineDate
+        ? new Date(`${deadlineDate} ${deadlineTime}`)
+        : new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    await addAssignmentStore({
-      title: title.trim(),
-      type: selectedType,
-      duration: parseInt(duration, 10) || 60,
-      deadline,
-      description: description.trim(),
-    });
+      const assignmentData = {
+        title: title.trim(),
+        type: selectedType,
+        duration: parseInt(duration, 10) || 60,
+        deadline,
+        description: description.trim(),
+      };
 
-    navigation.goBack();
+      if (assignmentId) {
+        // Update existing assignment
+        const original = assignmentsStore.assignments.find((a) => a.id === assignmentId);
+        if (original) {
+          const updatedAssignment: Assignment = {
+            id: assignmentId,
+            ...assignmentData,
+            status: original.status,
+            createdAt: original.createdAt,
+          };
+          await updateAssignmentStore(updatedAssignment);
+        }
+      } else {
+        // Add new assignment
+        await addAssignmentStore(assignmentData);
+      }
+    } catch (e) {
+      console.error('Failed to save assignment:', e);
+      Alert.alert('Error', 'Failed to save assignment');
+    } finally {
+      setIsLoading(false);
+      navigation.goBack();
+    }
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>adding assignment</Text>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>{assignmentId ? 'edit assignment' : 'adding assignment'}</Text>
+        <View style={{ width: 30 }} /> // Spacer to align back button
+      </View>
 
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <Text style={styles.label}>title:</Text>
           <TextInput
@@ -132,13 +206,14 @@ export const AddAssignmentScreen: React.FC<{ navigation: any }> = ({ navigation 
           />
         </View>
 
-        {/* Floating Add Button - matching prototype style */}
+        {/* Save Button - matching prototype style */}
         <TouchableOpacity 
-          style={styles.fab} 
-          onPress={addAssignment}
+          style={[styles.saveButton, isLoading && styles.saveButtonDisabled]} 
+          onPress={saveAssignment}
           activeOpacity={0.85}
+          disabled={isLoading}
         >
-          <Text style={styles.fabIcon}>+</Text>
+          <Text style={styles.saveButtonText}>{assignmentId ? 'save' : 'add'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -150,9 +225,24 @@ const styles = StyleSheet.create({
     flex: 1, 
     backgroundColor: colors.background,
   },
-  content: { 
-    padding: 20, 
-    paddingBottom: 100,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 12,
+    padding: 8,
+  },
+  backButtonText: {
+    fontSize: 20,
+    color: colors.text,
   },
   title: { 
     fontSize: 20, 
@@ -160,6 +250,12 @@ const styles = StyleSheet.create({
     color: colors.text, 
     marginBottom: 12,
     textTransform: 'none',
+    flex: 1,
+    textAlign: 'center',
+  },
+  content: { 
+    padding: 20, 
+    paddingBottom: 100,
   },
   card: { 
     backgroundColor: colors.surface, 
@@ -222,26 +318,25 @@ const styles = StyleSheet.create({
   typeOptionTextSelected: {
     color: colors.surface,
   },
-  fab: {
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  saveButton: {
+    marginTop: 24,
     backgroundColor: colors.accentPink || '#F472B6',
+    borderRadius: 30,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 8,
+    elevation: 6,
     shadowColor: colors.accentPink || '#F472B6',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
   },
-  fabIcon: {
+  saveButtonDisabled: {
+    backgroundColor: colors.border,
+  },
+  saveButtonText: {
     color: colors.surface,
-    fontSize: 32,
-    fontWeight: '400',
-    marginTop: -2,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

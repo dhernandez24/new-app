@@ -13,12 +13,14 @@ import { AssignmentCard, UserCard, FloatingButton } from '../components';
 import { colors } from '../utils/colors';
 import { formatFullDate, getDayName } from '../utils/helpers';
 import { useAssignmentsStore } from '../store/AssignmentsStore';
+import { useNavigation } from '@react-navigation/native';
 
 interface HomeScreenProps {
   navigation: any;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+  const nav = useNavigation();
   const { assignments, loadAssignments, completeAssignment } = useAssignmentsStore();
   const [refreshing, setRefreshing] = useState(false);
   const [user] = useState(mockUser);
@@ -47,11 +49,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   );
 
   const handleAddAssignment = () => {
-    const rootNav = navigation.getParent();
+    const rootNav = nav.getParent();
     if (rootNav) {
       rootNav.navigate('AddAssignment');
     } else {
-      navigation.navigate('AddAssignment');
+      nav.navigate('AddAssignment');
+    }
+  };
+
+  const handleEditAssignment = (id: string) => {
+    const rootNav = nav.getParent();
+    if (rootNav) {
+      rootNav.navigate('AddAssignment', { assignmentId: id });
+    } else {
+      nav.navigate('AddAssignment', { assignmentId: id });
     }
   };
 
@@ -99,7 +110,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     <AssignmentCard
                       key={assignment.id}
                       assignment={assignment}
-                      onPress={() => handleCompleteAssignment(assignment.id)}
+                      onPress={() => handleEditAssignment(assignment.id)}
                     />
                   ))}
                 </View>
