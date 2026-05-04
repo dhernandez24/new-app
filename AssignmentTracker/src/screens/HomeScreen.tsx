@@ -15,12 +15,8 @@ import { formatFullDate, getDayName } from '../utils/helpers';
 import { useAssignmentsStore } from '../store/AssignmentsStore';
 import { useNavigation } from '@react-navigation/native';
 
-interface HomeScreenProps {
-  navigation: any;
-}
-
-export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const nav = useNavigation();
+export const HomeScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { assignments, loadAssignments, completeAssignment } = useAssignmentsStore();
   const [refreshing, setRefreshing] = useState(false);
   const [user] = useState(mockUser);
@@ -49,20 +45,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   );
 
   const handleAddAssignment = () => {
-    const rootNav = nav.getParent();
+    const rootNav = navigation.getParent();
     if (rootNav) {
-      rootNav.navigate('AddAssignment');
+      (rootNav as any).navigate('AddAssignment');
     } else {
-      nav.navigate('AddAssignment');
+      (navigation as any).navigate('AddAssignment');
     }
   };
 
   const handleEditAssignment = (id: string) => {
-    const rootNav = nav.getParent();
+    const rootNav = navigation.getParent();
     if (rootNav) {
-      rootNav.navigate('AddAssignment', { assignmentId: id });
+      (rootNav as any).navigate('AddAssignment', { assignmentId: id });
     } else {
-      nav.navigate('AddAssignment', { assignmentId: id });
+      (navigation as any).navigate('AddAssignment', { assignmentId: id });
     }
   };
 

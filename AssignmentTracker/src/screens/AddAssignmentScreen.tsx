@@ -12,19 +12,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../utils/colors';
 import { useAssignmentsStore } from '../store/AssignmentsStore';
 import { AssignmentType, Assignment } from '../types';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const TYPE_OPTIONS: AssignmentType[] = ['homework', 'test', 'task', 'other'];
 
-interface AssignmentScreenParams {
-  assignmentId?: string;
-}
-
 export const AddAssignmentScreen: React.FC = () => {
-  const navigation = useNavigation();
-  // Fix typing: specify the param list for the root navigator
-  const route = useRoute<{ assignmentId?: string }>();
-  const { assignmentId } = route.params;
+  const navigation = useNavigation() as any;
+  const route = useRoute() as any;
+  const { assignmentId } = route.params ?? {};
 
   const [title, setTitle] = useState('');
   const [selectedType, setSelectedType] = useState<AssignmentType>('homework');
@@ -87,8 +82,13 @@ export const AddAssignmentScreen: React.FC = () => {
         if (original) {
           const updatedAssignment: Assignment = {
             id: assignmentId,
-            ...assignmentData,
+            title: assignmentData.title,
+            type: assignmentData.type,
+            duration: assignmentData.duration,
+            deadline: assignmentData.deadline,
+            description: assignmentData.description,
             status: original.status,
+            coinReward: original.coinReward, // Keep existing, store will recalc
             createdAt: original.createdAt,
           };
           await updateAssignmentStore(updatedAssignment);
