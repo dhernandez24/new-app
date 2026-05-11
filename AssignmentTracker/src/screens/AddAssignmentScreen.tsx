@@ -54,7 +54,7 @@ export const AddAssignmentScreen: React.FC = () => {
         setIsLoading(false);
       });
     }
-  }, [assignmentId, loadAssignments, assignmentsStore]);
+  }, [assignmentId, loadAssignments]);
 
   const saveAssignment = async () => {
     if (!title.trim()) {
@@ -121,7 +121,7 @@ export const AddAssignmentScreen: React.FC = () => {
           <Text style={styles.backButtonText}> </Text>
         </TouchableOpacity>
         <Text style={styles.title}>{assignmentId ? 'edit assignment' : 'adding assignment'}</Text>
-        <View style={{ width: 30 }} /> 
+        <View style={{ width: 30 }} />
         
       </View>
 
