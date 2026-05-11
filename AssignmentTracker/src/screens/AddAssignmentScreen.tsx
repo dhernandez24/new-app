@@ -118,10 +118,11 @@ export const AddAssignmentScreen: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Text style={styles.backButtonText}> </Text>
         </TouchableOpacity>
         <Text style={styles.title}>{assignmentId ? 'edit assignment' : 'adding assignment'}</Text>
-        <View style={{ width: 30 }} /> // Spacer to align back button
+        <View style={{ width: 30 }} /> 
+        
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
