@@ -23,7 +23,7 @@ const calendarTheme = {
   textDisabledColor: colors.textLight,
   textSectionTitleColor: colors.textSecondary,
   dotColor: colors.primary,
-  selectedDotColor: colors.surface,
+  selectedDotColor: colors.accentPink,
   textDayFontSize: 15,
   textDayHeaderFontSize: 12,
   textMonthFontSize: 18,
@@ -118,29 +118,32 @@ export const AssignmentCalendar: React.FC<AssignmentCalendarProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
+    
     marginTop: 8,
   },
   segmentedControl: {
+    marginHorizontal: 85,
     flexDirection: 'row',
     backgroundColor: colors.background,
-    borderRadius: 12,
+    borderRadius: 35,
     padding: 4,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: 'lightgrey',
   },
   segment: {
     flex: 1,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 35,
     alignItems: 'center',
+   
   },
   segmentActive: {
     backgroundColor: colors.primary,
   },
   segmentText: {
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: '500',
     color: colors.textSecondary,
   },
@@ -149,8 +152,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   calendarCard: {
+  marginHorizontal: 10,
     backgroundColor: colors.surface,
   borderRadius: 20,
+  fontSize: 16,
+  padding: 10,
+  fontWeight: '500',
+  fontFamily: 'System',
+
+
   minHeight: 350,
 
   shadowColor: '#000',

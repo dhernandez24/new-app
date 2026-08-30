@@ -24,7 +24,7 @@ export const CalendarScreen: React.FC = () => {
   }, [loadAssignments]);
 
   const handleDayPress = (dateString: string) => {
-    setSelectedDiate(new Date(`${dateString}T00:00:00`));
+    setSelectedDate(new Date(`${dateString}T00:00:00`));
   };
 
   const selectedDayAssignments = useMemo(() => {
@@ -40,17 +40,17 @@ export const CalendarScreen: React.FC = () => {
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.navigate('Home')}
                   style={styles.backButton} >
-                    <Text style={styles.backButtonText}>x</Text>
+                    <Text style={styles.backButtonText}>{"←"}</Text>
                   </TouchableOpacity>
                 
-      </View>
+      
 
       <AssignmentCalendar
         assignments={assignments.filter((a) => a.status === 'pending')}
         selectedDate={selectedDate}
         onDayPress={handleDayPress}
       />
-
+</View>
       {selectedDate && (
         <View style={styles.assignmentsContainer}>
           <Text style={styles.selectedDateTitle}>
@@ -100,6 +100,7 @@ const styles = StyleSheet.create({
   header: {
     padding: 20,
     paddingBottom: 50,
+    
   },
 
 backButton: {
@@ -167,6 +168,7 @@ backButtonText: {
     width: 4,
     height: 36,
     borderRadius: 2,
+
     marginRight: 12,
   },
   assignmentInfo: {
